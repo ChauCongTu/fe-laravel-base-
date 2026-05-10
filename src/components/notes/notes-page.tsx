@@ -22,6 +22,7 @@ import { useAutosave } from "@/hooks/use-autosave";
 import { useDraft } from "@/hooks/use-draft";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
+import { FolderSelect } from "@/components/shared/folder-select";
 import type { NoteResource } from "@/api/notes/model";
 
 interface EditorState {
@@ -29,10 +30,11 @@ interface EditorState {
   content: string;
   type: "text" | "markdown";
   is_pinned: boolean;
+  folder_id: number | null;
 }
 
 const EMPTY_DRAFT: EditorState = {
-  title: "", content: "", type: "text", is_pinned: false,
+  title: "", content: "", type: "text", is_pinned: false, folder_id: null,
 };
 
 export function NotesPage() {
@@ -76,6 +78,7 @@ export function NotesPage() {
           content: created.data.content,
           type: created.data.type as "text" | "markdown",
           is_pinned: created.data.is_pinned,
+          folder_id: created.data.folder_id,
         });
         setSaveStatus("saved");
         if (isMobile) setMobileView("editor");
@@ -114,6 +117,7 @@ export function NotesPage() {
           content: state.content,
           type: state.type,
           is_pinned: state.is_pinned,
+          folder_id: state.folder_id,
         },
       });
     },
@@ -144,6 +148,7 @@ export function NotesPage() {
       content: note.content,
       type: note.type as "text" | "markdown",
       is_pinned: note.is_pinned,
+      folder_id: note.folder_id,
     });
     setSaveStatus("");
     setViewMode("edit");
@@ -158,6 +163,7 @@ export function NotesPage() {
         content: draft.content,
         type: draft.type,
         is_pinned: draft.is_pinned,
+        folder_id: draft.folder_id,
       },
     });
   };
@@ -388,6 +394,16 @@ export function NotesPage() {
             leftSection={<IconMarkdown size={12} />}
             styles={{ input: { fontSize: 11 } }}
           />
+
+          {!isMobile && (
+            <FolderSelect
+              value={currentState.folder_id}
+              onChange={(id) => setCurrentState((s) => ({ ...s, folder_id: id }))}
+              label=""
+              placeholder="Thư mục"
+              size="xs"
+            />
+          )}
 
           {isMarkdown && !isMobile && (
             <SegmentedControl

@@ -1,28 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Card, Text, Group, Stack, Avatar, Badge, SimpleGrid,
   TextInput, PasswordInput, Button, Alert, Divider, Title,
-  Select, ActionIcon, Tooltip, Loader, FileButton,
+  Select, ActionIcon, Tooltip, FileButton,
 } from "@mantine/core";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  IconAlertCircle, IconCheck, IconCamera, IconTrash, IconUser,
+  IconAlertCircle, IconCheck, IconCamera, IconTrash,
 } from "@tabler/icons-react";
 import {
-  useAuthMe, useAuthUpdateProfile, useAuthChangePassword,
+  useAuthUpdateProfile, useAuthChangePassword,
   useAuthUploadAvatar, useAuthDeleteAvatar,
-  getAuthMeQueryKey,
 } from "@/api/auth";
 import { useAuthStore } from "@/stores/auth-store";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   changePasswordSchema, updateProfileSchema,
   type ChangePasswordFormValues, type UpdateProfileFormValues,
 } from "@/lib/yup";
-import type { UserResource } from "@/api/auth/model";
 import type { AxiosError } from "axios";
 
 const GENDER_OPTIONS = [
@@ -34,18 +31,10 @@ const GENDER_OPTIONS = [
 
 export function ProfilePage() {
   const { setUser, user } = useAuthStore();
-  const qc = useQueryClient();
-  const { data: me } = useAuthMe({ query: { retry: false } });
 
-  useEffect(() => {
-    if (me?.data) setUser(me.data);
-  }, [me, setUser]);
-
-  const currentUser = user ?? me?.data;
+  const currentUser = user;
   const initials = currentUser?.name
     ?.split(" ").map((w: string) => w[0]).slice(-2).join("").toUpperCase() ?? "?";
-
-  const invalidateMe = () => qc.invalidateQueries({ queryKey: getAuthMeQueryKey() });
 
   // ── Avatar ────────────────────────────────────────────────────────────────
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -55,7 +44,6 @@ export function ProfilePage() {
       onSuccess: (data) => {
         setUser(data.data);
         setAvatarPreview(null);
-        invalidateMe();
       },
     },
   });
@@ -65,7 +53,6 @@ export function ProfilePage() {
       onSuccess: (data) => {
         setUser(data.data);
         setAvatarPreview(null);
-        invalidateMe();
       },
     },
   });
@@ -108,7 +95,6 @@ export function ProfilePage() {
     mutation: {
       onSuccess: (data) => {
         setUser(data.data);
-        invalidateMe();
       },
       onError: (e: unknown) => {
         const err = e as AxiosError<{ message: string; errors?: Record<string, string[]> }>;

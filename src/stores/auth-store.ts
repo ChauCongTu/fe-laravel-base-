@@ -1,72 +1,48 @@
-/**
- * Zustand store quản lý trạng thái auth.
- * - Lưu user và token
- * - Persist token vào localStorage
- * - _hasHydrated: tránh flash màn hình login khi SSR chưa hydrate xong
- */
-
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { authCookie } from "@/lib/auth-cookie";
 import type { UserResource } from "@/api/auth/model";
 
 interface AuthState {
   user: UserResource | null;
-  token: string | null;
   isAuthenticated: boolean;
-  _hasHydrated: boolean;
 
-  setAuth: (user: UserResource, token: string) => void;
+  setAuth: (user: UserResource, accessToken: string, refreshToken: string, expiresIn: number) => void;
   setUser: (user: UserResource) => void;
   logout: () => void;
-  setHasHydrated: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
-      _hasHydrated: false,
 
-      setAuth: (user, token) => {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("auth_token", token);
-        }
-        set({ user, token, isAuthenticated: true });
+      setAuth: (user, accessToken, refreshToken, expiresIn) => {
+        authCookie.set(accessToken, expiresIn);
+        authCookie.setRefresh(refreshToken);
+        set({ user, isAuthenticated: true });
       },
 
       setUser: (user) => set({ user }),
 
       logout: () => {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("auth_token");
-        }
-        set({ user: null, token: null, isAuthenticated: false });
+        authCookie.clear();
+        set({ user: null, isAuthenticated: false });
       },
-
-      setHasHydrated: (value) => set({ _hasHydrated: value }),
     }),
     {
-      name: "auth-storage",
-      partialize: (state) => ({ token: state.token }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.setHasHydrated(true);
-          if (state.token && typeof window !== "undefined") {
-            localStorage.setItem("auth_token", state.token);
-          }
-        } else {
-          useAuthStore.getState().setHasHydrated(true);
-        }
-      },
+      name: "auth-user",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ user: state.user }),
     }
   )
 );
 
-// Lắng nghe event "auth:logout" từ axios interceptor (tránh circular import)
 if (typeof window !== "undefined") {
   window.addEventListener("auth:logout", () => {
     useAuthStore.getState().logout();
   });
 }
+
+export const getAuthToken = (): string | undefined => authCookie.get();

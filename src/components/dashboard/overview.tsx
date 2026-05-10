@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import {
   SimpleGrid, Card, Text, Title, Group, ThemeIcon,
@@ -10,7 +9,6 @@ import {
   IconNotes, IconCheckbox, IconCode, IconFolder,
   IconArrowRight, IconClock,
 } from "@tabler/icons-react";
-import { useAuthMe } from "@/api/auth";
 import { useNotesIndex } from "@/api/notes";
 import { useTasksIndex } from "@/api/tasks";
 import { useSnippetsIndex } from "@/api/snippets";
@@ -18,18 +16,13 @@ import { useFoldersIndex } from "@/api/folders";
 import { useAuthStore } from "@/stores/auth-store";
 
 export function DashboardOverview() {
-  const { setUser, user } = useAuthStore();
-  const { data: me } = useAuthMe({ query: { retry: false } });
+  const { user } = useAuthStore();
   const { data: notes, isLoading: loadingNotes } = useNotesIndex();
   const { data: tasks, isLoading: loadingTasks } = useTasksIndex();
   const { data: snippets, isLoading: loadingSnippets } = useSnippetsIndex();
   const { data: folders, isLoading: loadingFolders } = useFoldersIndex();
 
-  useEffect(() => {
-    if (me?.data) setUser(me.data);
-  }, [me, setUser]);
-
-  const currentUser = user ?? me?.data;
+  const currentUser = user;
 
   const stats = [
     {

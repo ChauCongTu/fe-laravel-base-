@@ -39,7 +39,7 @@ export function RegisterCard() {
   const { mutate: doRegister, isPending } = useAuthRegister({
     mutation: {
       onSuccess: (data) => {
-        setAuth(data.data, data.token);
+        setAuth(data.data, data.access_token, data.refresh_token, data.expires_in);
         router.replace("/dashboard");
       },
       onError: (err: unknown) => {
@@ -62,7 +62,7 @@ export function RegisterCard() {
   });
 
   const onSubmit = (values: RegisterFormValues) => {
-    doRegister({ data: { ...values, device_name: "web" } });
+    doRegister({ data: { ...values } });
   };
 
   return (

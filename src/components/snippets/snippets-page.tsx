@@ -18,6 +18,7 @@ import { useAutosave } from "@/hooks/use-autosave";
 import { useDraft } from "@/hooks/use-draft";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
+import { FolderSelect } from "@/components/shared/folder-select";
 import type { SnippetResource } from "@/api/snippets/model";
 
 const LANGUAGES = [
@@ -37,9 +38,10 @@ interface EditorState {
   code_block: string;
   language: string;
   description: string;
+  folder_id: number | null;
 }
 
-const EMPTY: EditorState = { title: "", code_block: "", language: "javascript", description: "" };
+const EMPTY: EditorState = { title: "", code_block: "", language: "javascript", description: "", folder_id: null };
 
 export function SnippetsPage() {
   const qc = useQueryClient();
@@ -72,7 +74,7 @@ export function SnippetsPage() {
       onSuccess: (created) => {
         invalidate(); clearDraft(); setIsCreating(false);
         setSelected(created.data);
-        setEditorState({ title: created.data.title, code_block: created.data.code_block, language: created.data.language, description: created.data.description ?? "" });
+        setEditorState({ title: created.data.title, code_block: created.data.code_block, language: created.data.language, description: created.data.description ?? "", folder_id: created.data.folder_id });
         setSaveStatus("saved");
         if (isMobile) setMobileView("editor");
       },
@@ -98,21 +100,21 @@ export function SnippetsPage() {
   const handleAutosave = useCallback(async (state: EditorState) => {
     if (!selected) return;
     setSaveStatus("saving");
-    updateSnippet({ snippet: selected.id, data: { title: state.title || "Snippet", code_block: state.code_block, language: state.language, description: state.description || null } });
+    updateSnippet({ snippet: selected.id, data: { title: state.title || "Snippet", code_block: state.code_block, language: state.language, description: state.description || null, folder_id: state.folder_id } });
   }, [selected, updateSnippet]);
 
   const { isDirty } = useAutosave({ data: editorState, onSave: handleAutosave, delay: 1500, enabled: !!selected && !isCreating });
 
   const openNote = (s: SnippetResource) => {
     setIsCreating(false); setSelected(s);
-    setEditorState({ title: s.title, code_block: s.code_block, language: s.language, description: s.description ?? "" });
+    setEditorState({ title: s.title, code_block: s.code_block, language: s.language, description: s.description ?? "", folder_id: s.folder_id });
     setSaveStatus("");
     if (isMobile) setMobileView("editor");
   };
 
   const saveNew = () => {
     if (!draft.code_block.trim()) return;
-    createSnippet({ data: { title: draft.title || "Snippet", code_block: draft.code_block, language: draft.language, description: draft.description || null } });
+    createSnippet({ data: { title: draft.title || "Snippet", code_block: draft.code_block, language: draft.language, description: draft.description || null, folder_id: draft.folder_id } });
   };
 
   const copyCode = () => {
@@ -213,6 +215,15 @@ export function SnippetsPage() {
             <TextInput size="xs" placeholder="Mô tả..." value={current.description}
               onChange={(e) => setCurrent((s) => ({ ...s, description: e.target.value }))}
               w={160} styles={{ input: { fontSize: 12 } }} />
+          )}
+          {!isMobile && (
+            <FolderSelect
+              value={current.folder_id}
+              onChange={(id) => setCurrent((s) => ({ ...s, folder_id: id }))}
+              label=""
+              placeholder="Thư mục"
+              size="xs"
+            />
           )}
           <Tooltip label={copied ? "Đã copy!" : "Copy"}>
             <ActionIcon size="sm" variant="subtle" color={copied ? "green" : "gray"} onClick={copyCode}>

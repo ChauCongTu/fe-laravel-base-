@@ -40,7 +40,7 @@ export function LoginCard() {
   const { mutate: login, isPending } = useAuthLogin({
     mutation: {
       onSuccess: (data) => {
-        setAuth(data.data, data.token);
+        setAuth(data.data, data.access_token, data.refresh_token, data.expires_in);
         router.replace("/dashboard");
       },
       onError: (err: unknown) => {
