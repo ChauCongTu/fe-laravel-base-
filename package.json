@@ -1,0 +1,51 @@
+{
+  "name": "fe_life_os",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "prebuild": "yarn generate",
+    "start": "next start",
+    "lint": "eslint",
+    "fetch-api": "tsx scripts/fetch-api.mts",
+    "clean-api": "tsx scripts/clean-api.mts",
+    "generate": "yarn fetch-api && yarn clean-api && orval --config orval.config.ts",
+    "generate:watch": "orval --config orval.config.ts --watch",
+    "generate:offline": "yarn clean-api && orval --config orval.config.ts"
+  },
+  "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@mantine/core": "^9.1.1",
+    "@mantine/hooks": "^9.1.1",
+    "@tabler/icons-react": "^3.44.0",
+    "@tanstack/react-query": "^5.100.9",
+    "@tanstack/react-query-devtools": "^5.100.9",
+    "axios": "^1.16.0",
+    "next": "16.2.6",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.75.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "yup": "^1.7.1",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "orval": "^8.9.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
